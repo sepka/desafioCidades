@@ -330,20 +330,47 @@ public class desafio{
      */
     @GET
     @Produces("application/json")
-    @Path("listaCidades")
+    @Path("distCidades")
     public String distCidades() throws SQLException {
         ArrayList<Cidade> lista = new ArrayList<>();
 
         CidadesDao cd = new CidadesDao();
 
         lista = cd.getLista();
+        String cidadeA = ""; 
+        String cidadeB = "";
+        Double distancia = 0.;
+        Double maiorDistancia = 0.;
+        String lastCidade = "";
+        Double lastLat= 0.;
+        Double lastLon = 0.;
+        
+       for (Cidade cidade : lista) {
+    	   if(lastCidade.equals("")) {
+    		   lastCidade = cidade.getName();
+        	   lastLat = cidade.getLat();
+        	   lastLon = cidade.getLon();
+    	   }
+    	   System.out.println(cidade.getName());
+    	   
+    	   distancia = distance(lastLat, lastLon, cidade.getLat(), cidade.getLon());
+    	   System.out.println(distancia);
+    	   if (distancia > maiorDistancia) {
+    		   maiorDistancia = distancia;
+    		  cidadeA = lastCidade;
+    		  cidadeB = cidade.getName();
+    	   }
+    	   lastCidade = cidade.getName();
+    	   lastLat = cidade.getLat();
+    	   lastLon = cidade.getLon();
+       }
 
         
-        
-        
-        Gson g = new Gson();     
-        
-        return g.toJson(lista);
+   	
+   	// { "cidadeA":"1", "cidadeB":"1", "distance":"1"}
+   	String pattern ="{ \"cidadeA\":\"%s\", \"cidadeB\":\"%s\", \"distance\":\"%s\"}";
+   	    	
+   	return String.format(pattern, cidadeA, cidadeB, maiorDistancia);
     }
     
     
@@ -363,6 +390,35 @@ public class desafio{
         Gson g = new Gson();
 
         return g.toJson(lista);
+    }
+    
+   
+
+    private static double distance(double lat1, double lon1, double lat2, double lon2) {
+    
+    	double theta = lon1 - lon2;
+        double dist = Math.sin(deg2rad(lat1)) * Math.sin(deg2rad(lat2)) + Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) * Math.cos(deg2rad(theta));
+        dist = Math.acos(dist);
+        dist = rad2deg(dist);
+        dist = dist * 60 * 1.1515;
+        dist = dist * 1.609344;
+
+
+        return (dist);
+    }
+
+
+    /*    converts decimal degrees to radians */
+
+    private static double deg2rad(double deg) {
+        return (deg * Math.PI / 180.0);
+    }
+
+ 
+    /*    converts radians to decimal degrees */
+   
+    private static double rad2deg(double rad) {
+        return (rad * 180 / Math.PI);
     }
     
 
